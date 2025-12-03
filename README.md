@@ -55,7 +55,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from PIL import Image
 
-# -------------------------- 1. 配置类（补充SASA-CP核心参数）--------------------------
+# -------------------------- 1. 配置类（补充LSI核心参数）--------------------------
 class Config:
     def __init__(self):
         # 原始模型配置
@@ -69,7 +69,7 @@ class Config:
         self.load_4bit = False
         self.debug = False
         
-        # SASA-CP核心配置（关键参数，可根据实验调整）
+        # LSI核心配置（关键参数，可根据实验调整）
         self.lf = 12  # 融合层索引（LLaVA-1.5-7B的transformer中层，语义最丰富）
         self.ls = 3   # 安全层索引（浅层安全感知层，建议2-4层）
         self.alpha = 0.1  # 注入信号强度超参数
@@ -126,7 +126,7 @@ for param in model.parameters():
     param.requires_grad = False
 model.eval()
 
-# -------------------------- 3. SASA-CP核心模块实现 --------------------------
+# -------------------------- 3. LSI核心模块实现 --------------------------
 class SASACP:
     def __init__(self, config, model, tokenizer, image_processor):
         self.config = config
@@ -143,7 +143,7 @@ class SASACP:
         # 注册前向钩子（提取lf和ls层的隐藏状态）
         self._register_hooks()
         
-        # SASA-CP可训练模块（草案3.3定义）
+        # LSI可训练模块（草案3.3定义）
         hidden_dim = model.lm_head.in_features  # LLaVA隐藏层维度（默认4096 for 7B）
         self.projection_layer = nn.Linear(hidden_dim, hidden_dim).to(config.device)  # Wp
         self.safety_probe = nn.Linear(hidden_dim, 1).to(config.device)  # 安全探针ψ
@@ -451,7 +451,7 @@ def train_sasacp(sasacp_model, train_df, val_df):
 
 # -------------------------- 6. 推理与可解释性示例 --------------------------
 if __name__ == "__main__":
-    # 1. 初始化SASA-CP
+    # 1. 初始化LSI
     sasacp = SASACP(arg, model, tokenizer, image_processor)
     
     # 2. 训练（需准备训练/验证数据，格式为DataFrame，包含image_path/text_prompt/label）
