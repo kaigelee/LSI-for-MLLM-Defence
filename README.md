@@ -55,7 +55,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from PIL import Image
 
-# -------------------------- 1. Configuration Class (Supplementary SASA-CP Core Parameters) --------------------------
+# -------------------------- 1. Configuration Class (Supplementary LSI Core Parameters) --------------------------
 class Config:
     def __init__(self):
         # Original model configuration
@@ -69,7 +69,7 @@ class Config:
         self.load_4bit = False
         self.debug = False
         
-        # SASA-CP core configuration (key parameters, adjustable via experiments)
+        # LSI core configuration (key parameters, adjustable via experiments)
         self.lf = 12  # Fusion layer index (middle layer of LLaVA-1.5-7B transformer, richest in semantics)
         self.ls = 3   # Safety layer index (shallow safety perception layer, recommended 2-4)
         self.alpha = 0.1  # Injection signal strength hyperparameter
@@ -126,7 +126,7 @@ for param in model.parameters():
     param.requires_grad = False
 model.eval()
 
-# -------------------------- 3. SASA-CP Core Module Implementation --------------------------
+# -------------------------- 3. LSI Core Module Implementation --------------------------
 class SASACP:
     def __init__(self, config, model, tokenizer, image_processor):
         self.config = config
@@ -143,7 +143,7 @@ class SASACP:
         # Register forward hooks (extract hidden states of lf and ls layers)
         self._register_hooks()
         
-        # SASA-CP trainable modules (defined in Draft 3.3)
+        # LSI trainable modules (defined in Draft 3.3)
         hidden_dim = model.lm_head.in_features  # LLaVA hidden dimension (default 4096 for 7B)
         self.projection_layer = nn.Linear(hidden_dim, hidden_dim).to(config.device)  # Wp
         self.safety_probe = nn.Linear(hidden_dim, 1).to(config.device)  # Safety probe ψ
@@ -451,7 +451,7 @@ def train_sasacp(sasacp_model, train_df, val_df):
 
 # -------------------------- 6. Inference and Interpretability Example --------------------------
 if __name__ == "__main__":
-    # 1. Initialize SASA-CP
+    # 1. Initialize LSI
     sasacp = SASACP(arg, model, tokenizer, image_processor)
     
     # 2. Training (prepare training/validation data as DataFrame with image_path/text_prompt/label)
